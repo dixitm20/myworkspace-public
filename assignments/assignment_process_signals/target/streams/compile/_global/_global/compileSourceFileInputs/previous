@@ -1,0 +1,1 @@
+["sbt.Task[scala.collection.immutable.Map[java.lang.String, scala.collection.Seq[scala.Tuple2[java.nio.file.Path, sbt.nio.FileStamp]]]]",{"2.12.11":{"hashes":[["/mnt/ssd/fos-windows/ubuntu-workspace/my-workspace/intellij-wks/assignment_process_signals/src/main/scala/assignment/SignalProcessor.scala","c30dfc9014911ebf44ab1a3ab378f48cb1b34791"]],"lastModifiedTimes":[]}}]
