@@ -45,7 +45,7 @@ object AttributeSelector {
 
       param_createFullBatch = param_container_createFullBatch.toBoolean
 
-      if (param_batch_id <= param_lastFullBatchId )
+      if (param_batch_id <= param_lastFullBatchId)
         throw new Exception("Invalid Argument Value For batch_id. batch_id should always be greater than lastFullBatchId")
     }
     // <<< END SECTION <<<: Parameter Parsing
@@ -149,12 +149,12 @@ object AttributeSelector {
         //       partitions data since the last full load
         println(s"As the createFullBatch: true we pull & append to source data " +
           s"all the partitions data since the last full load from target. we pull " +
-          s"data from target using the condition: batch_id > $lastFullBatchId")
+          s"data from target using the condition: batch_id >= $lastFullBatchId")
         println(s"\n==> 2. DATA FROM TARGET TO BE MERGED WITH SOURCE FOR " +
-          s"FULL LOAD BATCH: batch_id > $lastFullBatchId\n")
+          s"FULL LOAD BATCH: batch_id >= $lastFullBatchId\n")
 
         val tgtdf = spark.read.parquet(s"$outputPath")
-          .where(s"batch_id > $lastFullBatchId")
+          .where(s"batch_id >= $lastFullBatchId")
 
         srcdf.union(tgtdf)
       } else {
@@ -218,7 +218,7 @@ object AttributeSelector {
 
 
     // INFO: If createFullBatch is true then we set appliedRuledf as the finaldf.
-    //           By including the data from target with the condition: batch_id > $lastFullBatchId in procdf in section
+    //           By including the data from target with the condition: batch_id >= $lastFullBatchId in procdf in section
     //           ">>> BEGIN SECTION >>>: Append target data" we have already included all data of last full batch and remaining
     //           incremental batches. Now once we have this entire data in scope the application of above rules give us
     //           the complete full load data. The only thing that needs to be done is to drop the actual batch_id column
@@ -257,15 +257,16 @@ object AttributeSelector {
 
     // Cache this dataframe as we run another action on the this dataframe for getting counts
     finaldf.cache()
-      finaldf.coalesce(1).write
-        .mode(SaveMode.Overwrite)
-        .parquet(s"$outputPath/batch_id=$batch_id")
+
+    finaldf.coalesce(1).write
+      .mode(SaveMode.Overwrite)
+      .parquet(s"$outputPath/batch_id=$batch_id")
 
     // DEBUG
     //finaldf.show()
     // DEBUG
 
-    val outputRecCount=finaldf.count()
+    val outputRecCount = finaldf.count()
 
     if (createFullBatch) {
       println(s"\n==> 5. FULL BATCH WRITE LOADED RECORD COUNT: $outputRecCount INTO TARGET PARTITION: $outputPath/batch_id=$batch_id")

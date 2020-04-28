@@ -7,8 +7,8 @@
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="modules">
           <set>
-            <option value="/mnt/ssd/fos-windows/ubuntu-workspace/my-workspace/intellij-wks/assignment_salesintel_round2" />
-            <option value="/mnt/ssd/fos-windows/ubuntu-workspace/my-workspace/intellij-wks/assignment_salesintel_round2/project" />
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/project" />
           </set>
         </option>
         <option name="sbtVersion" value="1.3.10" />

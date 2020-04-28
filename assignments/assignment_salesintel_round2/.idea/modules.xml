@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/assignment_salesintel_round2.iml" filepath="$PROJECT_DIR$/.idea/modules/assignment_salesintel_round2.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/assignment_salesintel_round2-build.iml" filepath="$PROJECT_DIR$/.idea/modules/assignment_salesintel_round2-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/assignments.assignment_salesintel_round2.iml" filepath="$PROJECT_DIR$/.idea/modules/assignments.assignment_salesintel_round2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/project.assignment_salesintel_round2-build.iml" filepath="$PROJECT_DIR$/.idea/modules/project.assignment_salesintel_round2-build.iml" />
     </modules>
   </component>
 </project>

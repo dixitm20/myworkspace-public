@@ -58,8 +58,8 @@ spark-submit \
 
 # Intentional sleep for analyzing logs
 # Can be commented if not needed
-echo -e "\n\nINTENTIONAL SLEEP OF 30 SECONDS BEFORE RUN_2 TO ANALYZE LAST RUN LOGS\n\n"
-sleep 30
+echo -e "\n\nINTENTIONAL SLEEP OF 10 SECONDS BEFORE RUN_2 TO ANALYZE LAST RUN LOGS\n\n"
+sleep 10
 
 
 # RUN 2
@@ -90,8 +90,8 @@ spark-submit \
 
 # Intentional sleep for analyzing logs
 # Can be commented if not needed
-echo -e "\n\nINTENTIONAL SLEEP OF 30 SECONDS BEFORE RUN_3 TO ANALYZE LAST RUN LOGS\n\n"
-sleep 30
+echo -e "\n\nINTENTIONAL SLEEP OF 10 SECONDS BEFORE RUN_3 TO ANALYZE LAST RUN LOGS\n\n"
+sleep 10
 
 
 # RUN 3
@@ -118,5 +118,3 @@ spark-submit \
   495 \
   true
 ########################################################
-
-
