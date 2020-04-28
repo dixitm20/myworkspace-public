@@ -1,0 +1,1 @@
+["sbt.Task[scala.collection.immutable.Map[java.lang.String, scala.collection.Seq[scala.Tuple2[java.nio.file.Path, sbt.nio.FileStamp]]]]",{"2.12.11":{"hashes":[["/mnt/ssd/fos-windows/ubuntu-workspace/my-workspace/intellij-wks/assignment_salesintel_round2/src/main/scala/assignment/AttributeSelector.scala","510e2228b386d31476c7624dc49f64bc0718d55e"]],"lastModifiedTimes":[]}}]
