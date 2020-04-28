@@ -262,19 +262,15 @@ object AttributeSelector {
       .mode(SaveMode.Overwrite)
       .parquet(s"$outputPath/batch_id=$batch_id")
 
-    // DEBUG
-    //finaldf.show()
-    // DEBUG
-
     val outputRecCount = finaldf.count()
 
     if (createFullBatch) {
-      println(s"\n==> 5. FULL BATCH WRITE LOADED RECORD COUNT: $outputRecCount INTO TARGET PARTITION: $outputPath/batch_id=$batch_id")
+      println(s"\n==> 5. FULL BATCH WRITE LOADED RECORD COUNT: " +
+        s"$outputRecCount INTO TARGET PARTITION: $outputPath/batch_id=$batch_id")
     } else {
-      println(s"\n==> 5. INCREMENTAL BATCH WRITE LOADED RECORD COUNT: $outputRecCount INTO TARGET PARTITION: $outputPath/batch_id=$batch_id")
+      println(s"\n==> 5. INCREMENTAL BATCH WRITE LOADED RECORD COUNT: " +
+        s"$outputRecCount INTO TARGET PARTITION: $outputPath/batch_id=$batch_id")
     }
-
-    //if (createFullBatch) println("")
 
   }
 }
