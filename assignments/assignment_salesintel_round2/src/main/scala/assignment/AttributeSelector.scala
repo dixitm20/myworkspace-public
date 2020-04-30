@@ -2,7 +2,7 @@ package assignment
 
 import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.apache.spark.sql.expressions.Window
-import org.apache.spark.sql.functions.{col, expr, max}
+import org.apache.spark.sql.functions.{col, expr, max, row_number}
 
 object AttributeSelector {
   def main(args: Array[String]) {
@@ -77,14 +77,19 @@ object AttributeSelector {
     //-------------------------------------------------------------------------------------
     /*
 
-    For application of the 2 rules I have used the two window functions. First function calculates
-    the maximum attribute_probablity for each company in given input set & the set function calculates
-    the maximum batch_id for any given company_id, attribute_id, attribute_probablity combination.
-    Once we have these 2 values calculated as additional columns within our datasets the process of
-    application of rules simply implies that within the given input we just have to select those records
-    for which the attribute_probablity is equal to the maximum attribute_probablity(calculated on per
-    company basis) and batch_id equals the maximum batch_id for the combination of company_id,
-    attribute_id, attribute_probablity.
+    ATTRIBUTES RULE FOR REF:
+    - For each company, take the set of all attributes with highest probability. There will be
+          only one attribute value for each attribute_type.
+    - If probabilities are the same, then take the attribute value from the newer batch,
+         followed by the lower source id as a tie-breaker
+
+    For application of the above 2 rules I have used the single window functions. The window function partitions the
+    input dataset on the basis of company_id & attribute_type  and then sorts the data on attribute_probability(DESC),
+    batch_id(DESC) & source_id(ASC) and assigns a rank as per this partitioning and ordering.
+    The sql equivalent of this step can be written as:
+    ROW_NUMBER() OVER (PARTITION BY COMPANY_ID, ATTRIBUTE_TYPE ORDER BY ATTRIBUTE_PROB DESC NULLS LAST,
+                       BATCH_ID DESC NULLS LAST, SOURCE_ID ASC NULLS LAST).
+    Once we have this rank available with us we simply select the record with rank 1.
 
     By utilizing this method of attribute rule application I am able to handle the scenarios of incremental
     feed generation and full feed generation through the same process. As the only difference between these
@@ -180,39 +185,40 @@ object AttributeSelector {
     //-------------------------------------------------------------------------------------
     // Apply the following attribute rules on the source data
     // Attribute Rules
-    // - For each company, take all attributes with highest probability.
-    // - If probabilities are the same, then take the attribute value from the newer batch.
+    // - For each company, take the set of all attributes with highest probability.
+    //       There will be only one attribute value for each attribute_type.
+    // - If probabilities are the same, then take the attribute value from the newer batch,
+    //      followed by the lower source id as a tie-breaker.
 
     println("==> 3. DATA FROM POINTER 1 & 2 WILL PROCESSED THOROUGH THE COMMON " +
       "ATTRIBUTE SELECTION PROCESSING ENGINE\n")
 
     println("NOTE: The attribute selection processing engine will fetch max attribute_probablity " +
-      "\n\tper company within the complete input (source <<POINT 1>> + target <<POINT 2>>) and " +
+      "\n\tper company, attribute_type within the complete input (source <<POINT 1>> + target <<POINT 2>>) and " +
       "\n\tthen select the only those attributes which match max attribute_probablity and belong " +
-      "\n\tto the latest batch\n")
+      "\n\tto the latest batch, followed by the lower source id as a tie-breaker\n")
 
-    // INFO: Below window will be used to get Max attribute_prob for each company_id
-    val windowSpecMaxAttribProb = Window
-      .partitionBy("company_id")
+    // INFO: Below window will be used to get Max attribute_prob for each company_id and atrribute_type.
+    //       This window forms the base for ranking to choose the Max attribute_prob record. In case of
+    //       any conflicts use the logic of selecting  the attribute value from the newer batch,
+    //       followed by the lower source id as a tie-breaker
+    val windowSpecMaxAttribProbWithTieBreaker = Window
+      .partitionBy("company_id", "attribute_type")
+      .orderBy(col("attribute_prob").desc_nulls_last,
+        col("batch_id").desc_nulls_last, col("source_id").asc_nulls_last)
 
-    // INFO: Below window will be used to identify Max batch_id for each
-    //       attribute_id & attribute_prob combination within each company
-    val windowSpecMaxBatchForMaxProb = Window
-      .partitionBy("company_id", "attribute_id", "attribute_prob")
+    // Assign ranking for max attribute_prob usng the tie-breaker window spec of above step
+    val rankMaxAttribProbWithTieBreaker = row_number().over(windowSpecMaxAttribProbWithTieBreaker)
 
-    val maxAttribProb = max(col("attribute_prob")).over(windowSpecMaxAttribProb)
-    val maxBatchForMaxProb = max(col("batch_id")).over(windowSpecMaxBatchForMaxProb)
-
-    // INFO: Select only those attributes which have maximum attribute probablity and
-    //       in case of conflicts choose record with maximum batch_id
+    // INFO: Select only those attributes which have maximum attribute probablity
+    //       (rank_max_attribute_prob_with_tiebreaker=1) and in case of conflicts choose
+    //       record with maximum batch_id, followed by the lower source id as a tie-breaker
     val appliedRuledf = procdf
       .select(
         expr("*"),
-        maxAttribProb.alias("max_attribute_prob"),
-        maxBatchForMaxProb.alias("max_batch_id_for_attribute_prob"))
-      .where("attribute_prob = max_attribute_prob" +
-        " AND batch_id = max_batch_id_for_attribute_prob")
-      .drop("max_attribute_prob", "max_batch_id_for_attribute_prob")
+        rankMaxAttribProbWithTieBreaker.alias("rank_max_attribute_prob_with_tiebreaker"))
+      .where("rank_max_attribute_prob_with_tiebreaker = 1")
+      .drop("rank_max_attribute_prob_with_tiebreaker")
     //-------------------------------------------------------------------------------------
     // <<< END SECTION <<<: Apply attribute rules
 
